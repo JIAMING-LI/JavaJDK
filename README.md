@@ -1,1 +1,1 @@
-# JavaSDK
+# JavaJDK
