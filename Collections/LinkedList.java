@@ -215,15 +215,16 @@ public class LinkedList<E>
      */
     E unlink(Node<E> x) {
         // assert x != null;
+        // JM : This is ensured before unlink is called
         final E element = x.item;
-        final Node<E> next = x.next;
-        final Node<E> prev = x.prev;
+        final Node<E> next = x.next; // JM : Save reference of next node of removed node. 
+        final Node<E> prev = x.prev; // JM : Save reference of prev node if removed node.
 
-        if (prev == null) {
-            first = next;
+        if (prev == null) { // JM : prev == null when removed node is head node. 
+            first = next;  // so the next node of removed node will become first
         } else {
-            prev.next = next;
-            x.prev = null;
+            prev.next = next; // JM : update prev.next to next node. A,B,C,D --> A,B,D, B.next = D
+            x.prev = null;  // JM : reset x.next to null
         }
 
         if (next == null) {
@@ -584,12 +585,12 @@ public class LinkedList<E>
     }
 
     private void checkElementIndex(int index) {
-        if (!isElementIndex(index))
+        if (!isElementIndex(index)) // JM : validate the index in range
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
 
     private void checkPositionIndex(int index) {
-        if (!isPositionIndex(index))
+        if (!isPositionIndex(index)) // JM : validate the index in range of position
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
 
@@ -598,8 +599,10 @@ public class LinkedList<E>
      */
     Node<E> node(int index) {
         // assert isElementIndex(index);
-
-        if (index < (size >> 1)) {
+        // JM : This is ensured before this method is called
+        //      Start the search from the beginning if the searching node is located
+        //      at the left half the list , search from the end otherwise.
+        if (index < (size >> 1)) { // index < (size >> 1) --> index < size/2
             Node<E> x = first;
             for (int i = 0; i < index; i++)
                 x = x.next;
@@ -655,6 +658,8 @@ public class LinkedList<E>
      *         this list, or -1 if this list does not contain the element
      */
     public int lastIndexOf(Object o) {
+
+        //JM : Search from the end of list.
         int index = size;
         if (o == null) {
             for (Node<E> x = last; x != null; x = x.prev) {
@@ -715,6 +720,7 @@ public class LinkedList<E>
      * @since 1.5
      */
     public E remove() {
+        //JM : This is different from poll since poll will return null if list is empty
         return removeFirst();
     }
 
@@ -726,6 +732,8 @@ public class LinkedList<E>
      * @since 1.5
      */
     public boolean offer(E e) {
+        // JM : offer and add do the samething. Because linkedList 
+        // implement both list and deque
         return add(e);
     }
 
@@ -902,25 +910,30 @@ public class LinkedList<E>
     }
 
     private class ListItr implements ListIterator<E> {
-        private Node<E> lastReturned;
-        private Node<E> next;
-        private int nextIndex;
-        private int expectedModCount = modCount;
+        private Node<E> lastReturned; // JM : last returned node, its value will be returned by the iterator
+        private Node<E> next; // JM : the next of the node being returned
+        private int nextIndex; // JM : index of the node being return
+        private int expectedModCount = modCount; //JM : fast-fail
 
         ListItr(int index) {
             // assert isPositionIndex(index);
+            // JM : checkPositionIndex(index) is call before ListItr constructor is called
+            // but when index == size, null should return since it point to the end of list
             next = (index == size) ? null : node(index);
             nextIndex = index;
         }
 
         public boolean hasNext() {
+            // JM : make sure client check the current iterator
+            // has more node to be iterated
             return nextIndex < size;
         }
 
         public E next() {
             checkForComodification();
             if (!hasNext())
-                throw new NoSuchElementException();
+                throw new NoSuchElementException(); // JM : throws exception since we expect the client to
+                //call hasNext() before every time they call next.
 
             lastReturned = next;
             next = next.next;
@@ -929,7 +942,7 @@ public class LinkedList<E>
         }
 
         public boolean hasPrevious() {
-            return nextIndex > 0;
+            return nextIndex > 0; //JM : it mean the iteator is not on the head
         }
 
         public E previous() {
@@ -937,6 +950,7 @@ public class LinkedList<E>
             if (!hasPrevious())
                 throw new NoSuchElementException();
 
+            // JM : like the opposite of next(), but next could be null if the last iterated node is last
             lastReturned = next = (next == null) ? last : next.prev;
             nextIndex--;
             return lastReturned.item;
@@ -957,7 +971,8 @@ public class LinkedList<E>
 
             Node<E> lastNext = lastReturned.next;
             unlink(lastReturned);
-            if (next == lastReturned)
+            if (next == lastReturned) // JM : when next reference is the same as lastReturned which 
+            // is being removed, set the next reference to be lastReturned.next;
                 next = lastNext;
             else
                 nextIndex--;
