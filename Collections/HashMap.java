@@ -622,6 +622,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     final Node<K,V> getNode(int hash, Object key) {
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+        //JIAMING : 1. Check for uninitilized table , 2. Check for empty table, 
+        //          3. Check for the same hash value in the table (Does not mean the requested key has mapping the table)
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (first = tab[(n - 1) & hash]) != null) {
             if (first.hash == hash && // always check first node
@@ -681,20 +683,20 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
                    boolean evict) {
         Node<K,V>[] tab; Node<K,V> p; int n, i;
-        if ((tab = table) == null || (n = tab.length) == 0)
+        if ((tab = table) == null || (n = tab.length) == 0) //JIAMING : Check empty table
             n = (tab = resize()).length;
-        if ((p = tab[i = (n - 1) & hash]) == null)
+        if ((p = tab[i = (n - 1) & hash]) == null) // JIAMING : Check the if the key already present in the table, create a new node if it havent
             tab[i] = newNode(hash, key, value, null);
-        else {
+        else { //JIAMing : Key already presented in the table or at least key has the same hash value as other key's
             Node<K,V> e; K k;
             if (p.hash == hash &&
-                ((k = p.key) == key || (key != null && key.equals(k))))
-                e = p;
+                ((k = p.key) == key || (key != null && key.equals(k)))) //JIAMING : key already in the table (same reference or same value * this is why we are doing two comparsion here)
+                e = p; //JIAMING : Update the mapping here , but key value have not been update yet.
             else if (p instanceof TreeNode)
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
             else {
                 for (int binCount = 0; ; ++binCount) {
-                    if ((e = p.next) == null) {
+                    if ((e = p.next) == null) { //JIAMING : insert the key into the end of the linked list
                         p.next = newNode(hash, key, value, null);
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
@@ -774,8 +776,11 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         Node<K,V> next;
                         do {
                             next = e.next;
+                            // JIAMING : (e.hash & oldCap) will get the highest bit in the power of two
+                            // If it is 0, the index in the new table will not change. If it is 1 , the
+                            // index will be increased oldCap
                             if ((e.hash & oldCap) == 0) {
-                                if (loTail == null)
+                                if (loTail == null) //JIAMING : traverse through the Node linked list.
                                     loHead = e;
                                 else
                                     loTail.next = e;
@@ -894,9 +899,9 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                                  (value != null && value.equals(v)))) {
                 if (node instanceof TreeNode)
                     ((TreeNode<K,V>)node).removeTreeNode(this, tab, movable);
-                else if (node == p)
+                else if (node == p) //JIAMING : node to be removed is the first node in the bin linked list
                     tab[index] = node.next;
-                else
+                else // JIAING : removed current node.
                     p.next = node.next;
                 ++modCount;
                 --size;
