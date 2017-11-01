@@ -820,15 +820,15 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K,V> hd = null, tl = null;
             do {
-                TreeNode<K,V> p = replacementTreeNode(e, null);
-                if (tl == null)
+                TreeNode<K,V> p = replacementTreeNode(e, null); //JIAMING : create a new treeNode
+                if (tl == null) //JIAMING : Head of the linked list to be root of the red-black tree
                     hd = p;
                 else {
                     p.prev = tl;
                     tl.next = p;
                 }
                 tl = p;
-            } while ((e = e.next) != null);
+            } while ((e = e.next) != null); //JIAMING : convert every node to TreeNode
             if ((tab[index] = hd) != null)
                 hd.treeify(tab);
         }
