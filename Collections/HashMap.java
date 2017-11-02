@@ -1990,13 +1990,16 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                                  (dir = compareComparables(kc, k, pk)) == 0)
                             dir = tieBreakOrder(k, pk);
 
-                        TreeNode<K,V> xp = p;
+                        TreeNode<K,V> xp = p; //JIAMING : xp here is the parent node (root node in the first iteration)
+                        //JIAMING : p is a temporary node to check whether it has child node or not
                         if ((p = (dir <= 0) ? p.left : p.right) == null) {
+                            //JIAMING : x is current node, its parent will be xp
                             x.parent = xp;
                             if (dir <= 0)
                                 xp.left = x;
                             else
                                 xp.right = x;
+                            //JIAMING : enable balanced red-black tree 
                             root = balanceInsertion(root, x);
                             break;
                         }
@@ -2277,6 +2280,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                                                     TreeNode<K,V> x) {
             x.red = true;
             for (TreeNode<K,V> xp, xpp, xppl, xppr;;) {
+                //JIAMING : current processed node x is Root, return x is a Root
                 if ((xp = x.parent) == null) {
                     x.red = false;
                     return x;
