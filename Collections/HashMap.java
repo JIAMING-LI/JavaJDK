@@ -2276,8 +2276,9 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             return root;
         }
 
-        static <K,V> TreeNode<K,V> balanceInsertion(TreeNode<K,V> root,
+        static <K,V> TreeNode<K,V>  balanceInsertion(TreeNode<K,V> root,
                                                     TreeNode<K,V> x) {
+            //JIAMING : Every inserted node will be initialized to be REDbra
             x.red = true;
             for (TreeNode<K,V> xp, xpp, xppl, xppr;;) {
                 //JIAMING : current processed node x is Root, return x is a Root
